@@ -12,13 +12,13 @@ function Library:CreateWindow(titleText)
 
     -- НОВАЯ ПАЛИТРА: Premium Dark & Amethyst
     local Colors = {
-        Background = Color3.fromRGB(16, 16, 18),     -- Почти черный, матовый
-        ElementBG = Color3.fromRGB(24, 24, 28),      -- Чуть светлее для кнопок
-        ElementHover = Color3.fromRGB(32, 32, 38),   -- Приятное высветление при наведении
-        Stroke = Color3.fromRGB(42, 42, 48),         -- Тонкая, ненавязчивая обводка
-        Accent = Color3.fromRGB(157, 78, 221),       -- Яркий аметистовый (фиолетовый) акцент
-        Text = Color3.fromRGB(245, 245, 245),        -- Чистый белый текст
-        TextMuted = Color3.fromRGB(120, 120, 130)    -- Серый для неактивного текста
+        Background = Color3.fromRGB(16, 16, 18),
+        ElementBG = Color3.fromRGB(24, 24, 28),
+        ElementHover = Color3.fromRGB(32, 32, 38),
+        Stroke = Color3.fromRGB(42, 42, 48),
+        Accent = Color3.fromRGB(157, 78, 221),
+        Text = Color3.fromRGB(245, 245, 245),
+        TextMuted = Color3.fromRGB(120, 120, 130)
     }
 
     print("Hello! Script by: discord.gg/CVxS3dH5fz")
