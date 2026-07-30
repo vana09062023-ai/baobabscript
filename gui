@@ -143,7 +143,7 @@ function Library:CreateWindow(titleText)
         end
     end)
 
-    -- Улучшенная логика сворачивания
+    -- Логика сворачивания
     local minimized = false
     MinimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
@@ -413,6 +413,11 @@ function Library:CreateWindow(titleText)
         Label.TextSize = 12
         Label.Font = Enum.Font.Gotham
         Label.Parent = ScrollFrame
+    end
+
+    -- ВОТ ЭТА ФУНКЦИЯ БЫЛА ПРОПУЩЕНА! Без нее старые скрипты выдавали ошибку.
+    function Window:Init()
+        -- Пустая функция для обратной совместимости с твоими скриптами
     end
 
     return Window
