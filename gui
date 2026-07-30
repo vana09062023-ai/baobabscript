@@ -32,7 +32,7 @@ function Library:CreateWindow(titleText)
     MainFrame.Position = UDim2.new(0.5, -170, 0.5, -210)
     MainFrame.BackgroundColor3 = Colors.Background
     MainFrame.BorderSizePixel = 0
-    MainFrame.ClipsDescendants = true -- Важно для красивого обрезания при сворачивании
+    MainFrame.ClipsDescendants = true
     MainFrame.Parent = ScreenGui
 
     local UICorner = Instance.new("UICorner")
@@ -60,7 +60,6 @@ function Library:CreateWindow(titleText)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = TopBar
 
-    -- Красивая кнопка сворачивания
     local MinimizeBtn = Instance.new("TextButton")
     MinimizeBtn.Size = UDim2.new(0, 45, 0, 45)
     MinimizeBtn.Position = UDim2.new(1, -45, 0, 0)
@@ -71,7 +70,6 @@ function Library:CreateWindow(titleText)
     MinimizeBtn.Font = Enum.Font.GothamBold
     MinimizeBtn.Parent = TopBar
 
-    -- Анимация наведения для кнопки сворачивания
     MinimizeBtn.MouseEnter:Connect(function()
         TweenService:Create(MinimizeBtn, TweenInfo.new(0.2), {TextColor3 = Colors.Text}):Play()
     end)
@@ -88,7 +86,6 @@ function Library:CreateWindow(titleText)
 
     local BottomLabel = Instance.new("TextLabel")
     BottomLabel.Size = UDim2.new(1, 0, 0, 30)
-    -- Изменил привязку: теперь отсчет идет сверху, чтобы при сворачивании текст не прыгал вверх!
     BottomLabel.Position = UDim2.new(0, 0, 0, 390) 
     BottomLabel.BackgroundTransparency = 1
     BottomLabel.Text = "discord.gg/CVxS3dH5fz"
@@ -98,7 +95,7 @@ function Library:CreateWindow(titleText)
     BottomLabel.Parent = MainFrame
 
     local ScrollFrame = Instance.new("ScrollingFrame")
-    ScrollFrame.Size = UDim2.new(1, 0, 0, 343) -- Жесткий размер вместо Scale, чтобы элементы не сжимались при сворачивании
+    ScrollFrame.Size = UDim2.new(1, 0, 0, 343)
     ScrollFrame.Position = UDim2.new(0, 0, 0, 46)
     ScrollFrame.BackgroundTransparency = 1
     ScrollFrame.ScrollBarThickness = 4
@@ -146,40 +143,32 @@ function Library:CreateWindow(titleText)
         end
     end)
 
-    -- Улучшенная логика сворачивания (Плавная и исправленная)
+    -- Улучшенная логика сворачивания
     local minimized = false
     MinimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
-            -- Анимация кнопки: вращаем и меняем на плюс
             MinimizeBtn.Text = "+"
             TweenService:Create(MinimizeBtn, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Rotation = 90}):Play()
             
-            -- Прячем скроллбар и нижний текст ОЧЕНЬ быстро (0.1s), затем делаем невидимыми ОКОНЧАТЕЛЬНО
             TweenService:Create(BottomLabel, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {TextTransparency = 1}):Play()
             TweenService:Create(ScrollFrame, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {ScrollBarImageTransparency = 1}):Play()
 
-            -- Ждем, пока затухание закончится, и скрываем элементы
             task.wait(0.11)
             BottomLabel.Visible = false
             ScrollFrame.Visible = false
             
-            -- Сворачиваем окно плавно (Exponential делает анимацию "сочной") (0.5s)
             TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, 340, 0, 45)}):Play()
         else
-            -- Возвращаем минус
             MinimizeBtn.Text = "−"
             TweenService:Create(MinimizeBtn, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Rotation = 0}):Play()
             
-            -- Разворачиваем (0.5s)
             TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, 340, 0, 420)}):Play()
             
-            -- Делаем элементы видимыми сразу после разворачивания (или чуть позже, для эффекта)
-            task.wait(0.1) -- Подождем немного, пока окно начнет расширяться
+            task.wait(0.1)
             BottomLabel.Visible = true
             ScrollFrame.Visible = true
             
-            -- Возвращаем видимость элементов, плавно в течение collapse time (0.4s)
             TweenService:Create(BottomLabel, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
             TweenService:Create(ScrollFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ScrollBarImageTransparency = 0}):Play()
         end
@@ -290,6 +279,140 @@ function Library:CreateWindow(titleText)
             TweenService:Create(ButtonBG, TweenInfo.new(0.1), {BackgroundColor3 = Colors.ElementHover, TextSize = 13}):Play()
         end)
         ButtonBG.MouseButton1Click:Connect(callback)
+    end
+
+    function Window:AddTextBox(data)
+        local text = data.text or "TextBox"
+        local placeholder = data.placeholder or "Type here..."
+        local callback = data.callback or function() end
+
+        local TBFrame = Instance.new("Frame")
+        TBFrame.Size = UDim2.new(1, 0, 0, 42)
+        TBFrame.BackgroundColor3 = Colors.ElementBG
+        TBFrame.Parent = ScrollFrame
+        Instance.new("UICorner", TBFrame).CornerRadius = UDim.new(0, 8)
+        Instance.new("UIStroke", TBFrame).Color = Colors.Stroke
+
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(0.5, 0, 1, 0)
+        Label.Position = UDim2.new(0, 15, 0, 0)
+        Label.BackgroundTransparency = 1
+        Label.Text = text
+        Label.TextColor3 = Colors.Text
+        Label.TextSize = 13
+        Label.Font = Enum.Font.GothamMedium
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Parent = TBFrame
+
+        local TextBox = Instance.new("TextBox")
+        TextBox.Size = UDim2.new(0.45, -10, 0, 26)
+        TextBox.Position = UDim2.new(0.55, 0, 0.5, -13)
+        TextBox.BackgroundColor3 = Colors.Background
+        TextBox.Text = ""
+        TextBox.PlaceholderText = placeholder
+        TextBox.TextColor3 = Colors.Text
+        TextBox.TextSize = 12
+        TextBox.Font = Enum.Font.Gotham
+        TextBox.Parent = TBFrame
+        Instance.new("UICorner", TextBox).CornerRadius = UDim.new(0, 6)
+        Instance.new("UIStroke", TextBox).Color = Colors.Stroke
+
+        TextBox.FocusLost:Connect(function()
+            callback(TextBox.Text)
+        end)
+    end
+
+    function Window:AddSlider(data)
+        local text = data.text or "Slider"
+        local min = data.min or 0
+        local max = data.max or 100
+        local default = data.default or min
+        local callback = data.callback or function() end
+
+        local SliderFrame = Instance.new("Frame")
+        SliderFrame.Size = UDim2.new(1, 0, 0, 50)
+        SliderFrame.BackgroundColor3 = Colors.ElementBG
+        SliderFrame.Parent = ScrollFrame
+        Instance.new("UICorner", SliderFrame).CornerRadius = UDim.new(0, 8)
+        Instance.new("UIStroke", SliderFrame).Color = Colors.Stroke
+
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(1, -30, 0, 25)
+        Label.Position = UDim2.new(0, 15, 0, 0)
+        Label.BackgroundTransparency = 1
+        Label.Text = text
+        Label.TextColor3 = Colors.Text
+        Label.TextSize = 13
+        Label.Font = Enum.Font.GothamMedium
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Parent = SliderFrame
+
+        local ValueLabel = Instance.new("TextLabel")
+        ValueLabel.Size = UDim2.new(0, 50, 0, 25)
+        ValueLabel.Position = UDim2.new(1, -65, 0, 0)
+        ValueLabel.BackgroundTransparency = 1
+        ValueLabel.Text = tostring(default)
+        ValueLabel.TextColor3 = Colors.TextMuted
+        ValueLabel.TextSize = 12
+        ValueLabel.Font = Enum.Font.Gotham
+        ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+        ValueLabel.Parent = SliderFrame
+
+        local SliderBG = Instance.new("TextButton")
+        SliderBG.Size = UDim2.new(1, -30, 0, 6)
+        SliderBG.Position = UDim2.new(0, 15, 0, 32)
+        SliderBG.BackgroundColor3 = Colors.Background
+        SliderBG.Text = ""
+        SliderBG.AutoButtonColor = false
+        SliderBG.Parent = SliderFrame
+        Instance.new("UICorner", SliderBG).CornerRadius = UDim.new(1, 0)
+
+        local Fill = Instance.new("Frame")
+        Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+        Fill.BackgroundColor3 = Colors.Accent
+        Fill.Parent = SliderBG
+        Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
+
+        local dragging = false
+        local function UpdateSlider(input)
+            local pos = math.clamp((input.Position.X - SliderBG.AbsolutePosition.X) / SliderBG.AbsoluteSize.X, 0, 1)
+            local value = math.floor(min + ((max - min) * pos))
+            TweenService:Create(Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(pos, 0, 1, 0)}):Play()
+            ValueLabel.Text = tostring(value)
+            callback(value)
+        end
+
+        SliderBG.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                UpdateSlider(input)
+            end
+        end)
+
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = false
+            end
+        end)
+
+        UserInputService.InputChanged:Connect(function(input)
+            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                UpdateSlider(input)
+            end
+        end)
+    end
+
+    function Window:AddLabel(data)
+        local text = data.text or "Label"
+
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(1, 0, 0, 24)
+        Label.BackgroundTransparency = 1
+        Label.Text = text
+        Label.TextColor3 = Colors.TextMuted
+        Label.TextSize = 12
+        Label.Font = Enum.Font.Gotham
+        Label.Parent = ScrollFrame
     end
 
     return Window
