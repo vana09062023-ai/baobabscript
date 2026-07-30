@@ -1,0 +1,311 @@
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+
+local Library = {}
+
+function Library:CreateWindow(guiName, titleText)
+    if CoreGui:FindFirstChild(guiName) then
+        CoreGui[guiName]:Destroy()
+    end
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = guiName
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = CoreGui
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Size = UDim2.new(0, 320, 0, 350)
+    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -175)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 10)
+    UICorner.Parent = MainFrame
+
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Parent = MainFrame
+    UIStroke.Color = Color3.fromRGB(60, 60, 70)
+    UIStroke.Thickness = 1.5
+
+    local TopBar = Instance.new("Frame")
+    TopBar.Size = UDim2.new(1, 0, 0, 40)
+    TopBar.BackgroundTransparency = 1
+    TopBar.Parent = MainFrame
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, -20, 1, 0)
+    Title.Position = UDim2.new(0, 20, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = titleText
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextSize = 18
+    Title.Font = Enum.Font.GothamBold
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = TopBar
+
+    local ScrollFrame = Instance.new("ScrollingFrame")
+    ScrollFrame.Size = UDim2.new(1, -20, 1, -50)
+    ScrollFrame.Position = UDim2.new(0, 10, 0, 40)
+    ScrollFrame.BackgroundTransparency = 1
+    ScrollFrame.ScrollBarThickness = 2
+    ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 110)
+    ScrollFrame.BorderSizePixel = 0
+    ScrollFrame.Parent = MainFrame
+
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Padding = UDim.new(0, 8)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Parent = ScrollFrame
+
+    UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
+    end)
+
+    local dragging, dragInput, dragStart, startPos
+    TopBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    TopBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            TweenService:Create(MainFrame, TweenInfo.new(0.1), {
+                Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            }):Play()
+        end
+    end)
+
+    local Window = {}
+
+    function Window:AddToggle(text, defaultState, callback)
+        local ToggleFrame = Instance.new("Frame")
+        ToggleFrame.Size = UDim2.new(1, -10, 0, 36)
+        ToggleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+        ToggleFrame.Parent = ScrollFrame
+        Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 6)
+
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(1, -60, 1, 0)
+        Label.Position = UDim2.new(0, 10, 0, 0)
+        Label.BackgroundTransparency = 1
+        Label.Text = text
+        Label.TextColor3 = Color3.fromRGB(220, 220, 220)
+        Label.TextSize = 14
+        Label.Font = Enum.Font.GothamMedium
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Parent = ToggleFrame
+
+        local ToggleBG = Instance.new("TextButton")
+        ToggleBG.Size = UDim2.new(0, 46, 0, 24)
+        ToggleBG.Position = UDim2.new(1, -56, 0.5, -12)
+        ToggleBG.BackgroundColor3 = defaultState and Color3.fromRGB(80, 220, 120) or Color3.fromRGB(50, 50, 55)
+        ToggleBG.Text = ""
+        ToggleBG.Parent = ToggleFrame
+        Instance.new("UICorner", ToggleBG).CornerRadius = UDim.new(1, 0)
+
+        local Circle = Instance.new("Frame")
+        Circle.Size = UDim2.new(0, 18, 0, 18)
+        Circle.Position = UDim2.new(defaultState and 1 or 0, defaultState and -21 or 3, 0.5, -9)
+        Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Circle.Parent = ToggleBG
+        Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+
+        local state = defaultState
+        local function Fire()
+            state = not state
+            local targetColor = state and Color3.fromRGB(80, 220, 120) or Color3.fromRGB(50, 50, 55)
+            local targetPos = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
+            TweenService:Create(ToggleBG, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = targetColor}):Play()
+            TweenService:Create(Circle, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = targetPos}):Play()
+            callback(state)
+        end
+        ToggleBG.MouseButton1Click:Connect(Fire)
+    end
+
+    function Window:AddButton(text, callback)
+        local ButtonBG = Instance.new("TextButton")
+        ButtonBG.Size = UDim2.new(1, -10, 0, 36)
+        ButtonBG.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+        ButtonBG.Text = text
+        ButtonBG.TextColor3 = Color3.fromRGB(255, 255, 255)
+        ButtonBG.TextSize = 14
+        ButtonBG.Font = Enum.Font.GothamMedium
+        ButtonBG.AutoButtonColor = false
+        ButtonBG.Parent = ScrollFrame
+        Instance.new("UICorner", ButtonBG).CornerRadius = UDim.new(0, 6)
+
+        ButtonBG.MouseEnter:Connect(function()
+            TweenService:Create(ButtonBG, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(55, 55, 65)}):Play()
+        end)
+        ButtonBG.MouseLeave:Connect(function()
+            TweenService:Create(ButtonBG, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
+        end)
+        ButtonBG.MouseButton1Down:Connect(function()
+            TweenService:Create(ButtonBG, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(70, 70, 80)}):Play()
+        end)
+        ButtonBG.MouseButton1Up:Connect(function()
+            TweenService:Create(ButtonBG, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(55, 55, 65)}):Play()
+        end)
+        ButtonBG.MouseButton1Click:Connect(callback)
+    end
+
+    function Window:AddLabel(text)
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(1, -10, 0, 24)
+        Label.BackgroundTransparency = 1
+        Label.Text = text
+        Label.TextColor3 = Color3.fromRGB(150, 150, 160)
+        Label.TextSize = 12
+        Label.Font = Enum.Font.Gotham
+        Label.Parent = ScrollFrame
+    end
+
+    return Window
+end
+
+local App = Library:CreateWindow("SmoothCustomHub", "Chameleon Hub")
+
+_G.ESP = false
+local espConnections = {}
+
+local function applyESP(player)
+    if not _G.ESP or player == LocalPlayer then return end
+    local char = player.Character
+    if not char then return end
+
+    local highlight = char:FindFirstChild("PlayerESP")
+    if not highlight then
+        highlight = Instance.new("Highlight")
+        highlight.Name = "PlayerESP"
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlight.FillTransparency = 0
+        highlight.OutlineTransparency = 0
+        highlight.Parent = char
+    end
+
+    local role = player:GetAttribute("Role")
+    if role == "Hider" then
+        highlight.FillColor = Color3.fromRGB(0, 255, 0)
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    elseif role == "Seeker" then
+        highlight.FillColor = Color3.fromRGB(255, 0, 0)
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    else
+        highlight.FillColor = Color3.fromRGB(255, 255, 255)
+        highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
+    end
+end
+
+local function removeESP(player)
+    if player.Character and player.Character:FindFirstChild("PlayerESP") then
+        player.Character.PlayerESP:Destroy()
+    end
+    if espConnections[player] then
+        for _, conn in ipairs(espConnections[player]) do conn:Disconnect() end
+        espConnections[player] = nil
+    end
+end
+
+local function setupPlayer(player)
+    if player == LocalPlayer then return end
+    espConnections[player] = {}
+    table.insert(espConnections[player], player.CharacterAdded:Connect(function() task.wait(0.2) applyESP(player) end))
+    table.insert(espConnections[player], player:GetAttributeChangedSignal("Role"):Connect(function() applyESP(player) end))
+    if player.Character then applyESP(player) end
+end
+
+App:AddToggle("Player ESP", false, function(state)
+    _G.ESP = state
+    if state then
+        for _, player in ipairs(Players:GetPlayers()) do setupPlayer(player) end
+        espConnections.PlayerAdded = Players.PlayerAdded:Connect(setupPlayer)
+        espConnections.PlayerRemoving = Players.PlayerRemoving:Connect(removeESP)
+    else
+        if espConnections.PlayerAdded then espConnections.PlayerAdded:Disconnect() end
+        if espConnections.PlayerRemoving then espConnections.PlayerRemoving:Disconnect() end
+        for _, player in ipairs(Players:GetPlayers()) do removeESP(player) end
+    end
+end)
+
+local freezeBG, freezeBV
+App:AddToggle("Hide Below", false, function(state)
+    _G.Toggle = state
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    local hum = char:WaitForChild("Humanoid")
+
+    if state then
+        hum.PlatformStand = true
+        local targetCFrame = hrp.CFrame * CFrame.new(0, -2, 0) * CFrame.Angles(math.rad(90), 0, 0)
+        hrp.CFrame = targetCFrame
+
+        freezeBG = Instance.new("BodyGyro")
+        freezeBG.Name = "FreezeBG"
+        freezeBG.P = 90000
+        freezeBG.MaxTorque = Vector3.new(9000000000, 9000000000, 9000000000)
+        freezeBG.CFrame = targetCFrame
+        freezeBG.Parent = hrp
+
+        freezeBV = Instance.new("BodyVelocity")
+        freezeBV.Name = "FreezeBV"
+        freezeBV.MaxForce = Vector3.new(9000000000, 9000000000, 9000000000)
+        freezeBV.Velocity = Vector3.zero
+        freezeBV.Parent = hrp
+
+        task.spawn(function()
+            while _G.Toggle and char and hrp.Parent do
+                if freezeBG then freezeBG.CFrame = targetCFrame end
+                if freezeBV then freezeBV.Velocity = Vector3.zero end
+                hrp.CFrame = targetCFrame
+                task.wait()
+            end
+        end)
+    else
+        if freezeBG then freezeBG:Destroy() end
+        if freezeBV then freezeBV:Destroy() end
+        hrp.CFrame = hrp.CFrame * CFrame.new(0, 5, 0)
+        hum.PlatformStand = false
+    end
+end)
+
+LocalPlayer.CameraMode = Enum.CameraMode.Classic
+LocalPlayer.CameraMinZoomDistance = 5
+LocalPlayer.CameraMaxZoomDistance = 150
+if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+    workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+end
+UserInputService.JumpRequest:Connect(function()
+    local char = LocalPlayer.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+    end
+end)
+
+App:AddButton("Reset Character", function()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("Humanoid") then
+        char.Humanoid.Health = 0
+    end
+end)
+
+App:AddButton("Print Info To Console", function()
+    print("Chameleon Hub Loaded Successfully!")
+end)
+
+App:AddLabel("discord.gg/zWpEHRkHW")
