@@ -10,15 +10,15 @@ function Library:CreateWindow(titleText)
         CoreGui[guiName]:Destroy()
     end
 
-    -- Цветовая палитра
+    -- НОВАЯ ПАЛИТРА: Глубокий синий
     local Colors = {
-        Background = Color3.fromRGB(15, 15, 18),
-        ElementBG = Color3.fromRGB(24, 24, 28),
-        ElementHover = Color3.fromRGB(30, 30, 35),
-        Stroke = Color3.fromRGB(45, 45, 52),
-        Accent = Color3.fromRGB(85, 115, 255),
-        Text = Color3.fromRGB(240, 240, 245),
-        TextMuted = Color3.fromRGB(150, 150, 160)
+        Background = Color3.fromRGB(10, 14, 24),     -- Очень темный синий фон
+        ElementBG = Color3.fromRGB(18, 24, 38),      -- Фон элементов
+        ElementHover = Color3.fromRGB(26, 34, 52),   -- При наведении
+        Stroke = Color3.fromRGB(35, 45, 70),         -- Стандартная обводка
+        Accent = Color3.fromRGB(60, 120, 255),       -- Яркий синий акцент
+        Text = Color3.fromRGB(230, 240, 255),        -- Бело-голубой текст
+        TextMuted = Color3.fromRGB(110, 130, 160)    -- Приглушенный текст
     }
 
     local ScreenGui = Instance.new("ScreenGui")
@@ -54,11 +54,28 @@ function Library:CreateWindow(titleText)
     Title.Position = UDim2.new(0, 20, 0, 0)
     Title.BackgroundTransparency = 1
     Title.Text = titleText or "Hub"
-    Title.TextColor3 = Colors.Text
+    Title.TextColor3 = Colors.Accent
     Title.TextSize = 16
     Title.Font = Enum.Font.GothamBold
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = TopBar
+
+    -- ЭФФЕКТ ПЕРЕЛИВАНИЯ (Shimmer Effect)
+    task.spawn(function()
+        local shimmerColors = {
+            Color3.fromRGB(40, 80, 220),   -- Глубокий синий
+            Color3.fromRGB(0, 170, 255),   -- Неоновый голубой
+            Color3.fromRGB(70, 120, 255)   -- Мягкий синий
+        }
+        local i = 1
+        while true do
+            TweenService:Create(UIStroke, TweenInfo.new(2.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Color = shimmerColors[i]}):Play()
+            TweenService:Create(Title, TweenInfo.new(2.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {TextColor3 = shimmerColors[i]}):Play()
+            task.wait(2.5)
+            i = i + 1
+            if i > #shimmerColors then i = 1 end
+        end
+    end)
 
     local MinimizeBtn = Instance.new("TextButton")
     MinimizeBtn.Size = UDim2.new(0, 45, 0, 45)
@@ -119,7 +136,6 @@ function Library:CreateWindow(titleText)
         ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 24)
     end)
 
-    -- Перетаскивание окна
     local dragging, dragInput, dragStart, startPos
     TopBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -143,7 +159,6 @@ function Library:CreateWindow(titleText)
         end
     end)
 
-    -- Логика сворачивания
     local minimized = false
     MinimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
@@ -174,7 +189,6 @@ function Library:CreateWindow(titleText)
         end
     end)
 
-    -- Скрытие UI на правый Shift
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
             ScreenGui.Enabled = not ScreenGui.Enabled
@@ -215,7 +229,7 @@ function Library:CreateWindow(titleText)
         local ToggleBG = Instance.new("Frame")
         ToggleBG.Size = UDim2.new(0, 44, 0, 22)
         ToggleBG.Position = UDim2.new(1, -56, 0.5, -11)
-        ToggleBG.BackgroundColor3 = defaultState and Colors.Accent or Color3.fromRGB(50, 50, 55)
+        ToggleBG.BackgroundColor3 = defaultState and Colors.Accent or Colors.ElementHover
         ToggleBG.Parent = ToggleFrame
         Instance.new("UICorner", ToggleBG).CornerRadius = UDim.new(1, 0)
 
@@ -236,7 +250,7 @@ function Library:CreateWindow(titleText)
         local state = defaultState
         local function Fire()
             state = not state
-            local targetColor = state and Colors.Accent or Color3.fromRGB(50, 50, 55)
+            local targetColor = state and Colors.Accent or Colors.ElementHover
             local targetPos = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
             
             TweenService:Create(ToggleBG, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = targetColor}):Play()
@@ -416,6 +430,7 @@ function Library:CreateWindow(titleText)
     end
 
     function Window:Init()
+        -- Сохранено для совместимости
     end
 
     return Window
