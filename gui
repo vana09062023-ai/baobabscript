@@ -146,7 +146,7 @@ function Library:CreateWindow(titleText)
         end
     end)
 
-    -- Улучшенная логика сворачивания (Плавная)
+    -- Улучшенная логика сворачивания (Плавная и исправленная)
     local minimized = false
     MinimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
@@ -155,23 +155,33 @@ function Library:CreateWindow(titleText)
             MinimizeBtn.Text = "+"
             TweenService:Create(MinimizeBtn, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Rotation = 90}):Play()
             
-            -- Сворачиваем окно плавно (Exponential делает анимацию "сочной")
-            TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, 340, 0, 45)}):Play()
+            -- Прячем скроллбар и нижний текст ОЧЕНЬ быстро (0.1s), затем делаем невидимыми ОКОНЧАТЕЛЬНО
+            TweenService:Create(BottomLabel, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {TextTransparency = 1}):Play()
+            TweenService:Create(ScrollFrame, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {ScrollBarImageTransparency = 1}):Play()
+
+            -- Ждем, пока затухание закончится, и скрываем элементы
+            task.wait(0.11)
+            BottomLabel.Visible = false
+            ScrollFrame.Visible = false
             
-            -- Прячем скроллбар и нижний текст, чтобы не мелькали
-            TweenService:Create(BottomLabel, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
-            TweenService:Create(ScrollFrame, TweenInfo.new(0.2), {ScrollBarImageTransparency = 1}):Play()
+            -- Сворачиваем окно плавно (Exponential делает анимацию "сочной") (0.5s)
+            TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, 340, 0, 45)}):Play()
         else
             -- Возвращаем минус
             MinimizeBtn.Text = "−"
             TweenService:Create(MinimizeBtn, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Rotation = 0}):Play()
             
-            -- Разворачиваем
+            -- Разворачиваем (0.5s)
             TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, 340, 0, 420)}):Play()
             
-            -- Возвращаем видимость элементов
-            TweenService:Create(BottomLabel, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
-            TweenService:Create(ScrollFrame, TweenInfo.new(0.4), {ScrollBarImageTransparency = 0}):Play()
+            -- Делаем элементы видимыми сразу после разворачивания (или чуть позже, для эффекта)
+            task.wait(0.1) -- Подождем немного, пока окно начнет расширяться
+            BottomLabel.Visible = true
+            ScrollFrame.Visible = true
+            
+            -- Возвращаем видимость элементов, плавно в течение collapse time (0.4s)
+            TweenService:Create(BottomLabel, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+            TweenService:Create(ScrollFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ScrollBarImageTransparency = 0}):Play()
         end
     end)
 
