@@ -5,7 +5,7 @@ local TweenService = game:GetService("TweenService")
 local Library = {}
 
 function Library:CreateWindow(titleText)
-    local guiName = titleText or "CustomHub"
+    local guiName = titleText or "Baobab Hub"
     if CoreGui:FindFirstChild(guiName) then
         CoreGui[guiName]:Destroy()
     end
@@ -17,20 +17,20 @@ function Library:CreateWindow(titleText)
 
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 320, 0, 350)
-    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -175)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    MainFrame.Size = UDim2.new(0, 320, 0, 380)
+    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -190)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     MainFrame.BorderSizePixel = 0
     MainFrame.Parent = ScreenGui
 
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 10)
+    UICorner.CornerRadius = UDim.new(0, 8)
     UICorner.Parent = MainFrame
 
     local UIStroke = Instance.new("UIStroke")
     UIStroke.Parent = MainFrame
-    UIStroke.Color = Color3.fromRGB(60, 60, 70)
-    UIStroke.Thickness = 1.5
+    UIStroke.Color = Color3.fromRGB(50, 50, 60)
+    UIStroke.Thickness = 1.2
 
     local TopBar = Instance.new("Frame")
     TopBar.Size = UDim2.new(1, 0, 0, 40)
@@ -43,31 +43,53 @@ function Library:CreateWindow(titleText)
     Title.BackgroundTransparency = 1
     Title.Text = titleText or "Hub"
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.TextSize = 18
+    Title.TextSize = 16
     Title.Font = Enum.Font.GothamBold
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = TopBar
 
+    local Divider = Instance.new("Frame")
+    Divider.Size = UDim2.new(1, 0, 0, 1)
+    Divider.Position = UDim2.new(0, 0, 1, 0)
+    Divider.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    Divider.BorderSizePixel = 0
+    Divider.Parent = TopBar
+
+    local BottomLabel = Instance.new("TextLabel")
+    BottomLabel.Size = UDim2.new(1, 0, 0, 30)
+    BottomLabel.Position = UDim2.new(0, 0, 1, -30)
+    BottomLabel.BackgroundTransparency = 1
+    BottomLabel.Text = "discord.gg/CVxS3dH5fz"
+    BottomLabel.TextColor3 = Color3.fromRGB(100, 100, 110)
+    BottomLabel.TextSize = 12
+    BottomLabel.Font = Enum.Font.GothamMedium
+    BottomLabel.Parent = MainFrame
+
     local ScrollFrame = Instance.new("ScrollingFrame")
-    ScrollFrame.Size = UDim2.new(1, -20, 1, -50)
-    ScrollFrame.Position = UDim2.new(0, 10, 0, 40)
+    ScrollFrame.Size = UDim2.new(1, 0, 1, -71)
+    ScrollFrame.Position = UDim2.new(0, 0, 0, 41)
     ScrollFrame.BackgroundTransparency = 1
-    ScrollFrame.ScrollBarThickness = 2
-    ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 110)
+    ScrollFrame.ScrollBarThickness = 3
+    ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90)
     ScrollFrame.BorderSizePixel = 0
     ScrollFrame.Parent = MainFrame
 
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.PaddingLeft = UDim.new(0, 12)
+    UIPadding.PaddingRight = UDim.new(0, 12)
+    UIPadding.PaddingTop = UDim.new(0, 12)
+    UIPadding.PaddingBottom = UDim.new(0, 12)
+    UIPadding.Parent = ScrollFrame
+
     local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Padding = UDim.new(0, 8)
+    UIListLayout.Padding = UDim.new(0, 10)
     UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     UIListLayout.Parent = ScrollFrame
 
-    -- Автоматическое изменение размера контента для скролла
     UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
+        ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 24)
     end)
 
-    -- Перетаскивание
     local dragging, dragInput, dragStart, startPos
     TopBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -85,7 +107,7 @@ function Library:CreateWindow(titleText)
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             local delta = input.Position - dragStart
-            TweenService:Create(MainFrame, TweenInfo.new(0.1), {
+            TweenService:Create(MainFrame, TweenInfo.new(0.08, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
                 Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
             }):Play()
         end
@@ -99,33 +121,39 @@ function Library:CreateWindow(titleText)
         local callback = data.callback or function() end
 
         local ToggleFrame = Instance.new("Frame")
-        ToggleFrame.Size = UDim2.new(1, -10, 0, 36)
-        ToggleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+        ToggleFrame.Size = UDim2.new(1, 0, 0, 42)
+        ToggleFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
         ToggleFrame.Parent = ScrollFrame
         Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 6)
 
+        local UIStrokeToggle = Instance.new("UIStroke")
+        UIStrokeToggle.Parent = ToggleFrame
+        UIStrokeToggle.Color = Color3.fromRGB(45, 45, 55)
+        UIStrokeToggle.Thickness = 1
+
         local Label = Instance.new("TextLabel")
-        Label.Size = UDim2.new(1, -60, 1, 0)
-        Label.Position = UDim2.new(0, 10, 0, 0)
+        Label.Size = UDim2.new(1, -70, 1, 0)
+        Label.Position = UDim2.new(0, 12, 0, 0)
         Label.BackgroundTransparency = 1
         Label.Text = text
-        Label.TextColor3 = Color3.fromRGB(220, 220, 220)
-        Label.TextSize = 14
+        Label.TextColor3 = Color3.fromRGB(230, 230, 235)
+        Label.TextSize = 13
         Label.Font = Enum.Font.GothamMedium
         Label.TextXAlignment = Enum.TextXAlignment.Left
         Label.Parent = ToggleFrame
 
         local ToggleBG = Instance.new("TextButton")
-        ToggleBG.Size = UDim2.new(0, 46, 0, 24)
-        ToggleBG.Position = UDim2.new(1, -56, 0.5, -12)
-        ToggleBG.BackgroundColor3 = defaultState and Color3.fromRGB(80, 220, 120) or Color3.fromRGB(50, 50, 55)
+        ToggleBG.Size = UDim2.new(0, 44, 0, 22)
+        ToggleBG.Position = UDim2.new(1, -56, 0.5, -11)
+        ToggleBG.BackgroundColor3 = defaultState and Color3.fromRGB(90, 100, 220) or Color3.fromRGB(50, 50, 55)
         ToggleBG.Text = ""
+        ToggleBG.AutoButtonColor = false
         ToggleBG.Parent = ToggleFrame
         Instance.new("UICorner", ToggleBG).CornerRadius = UDim.new(1, 0)
 
         local Circle = Instance.new("Frame")
-        Circle.Size = UDim2.new(0, 18, 0, 18)
-        Circle.Position = UDim2.new(defaultState and 1 or 0, defaultState and -21 or 3, 0.5, -9)
+        Circle.Size = UDim2.new(0, 16, 0, 16)
+        Circle.Position = UDim2.new(defaultState and 1 or 0, defaultState and -19 or 3, 0.5, -8)
         Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         Circle.Parent = ToggleBG
         Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
@@ -133,10 +161,10 @@ function Library:CreateWindow(titleText)
         local state = defaultState
         local function Fire()
             state = not state
-            local targetColor = state and Color3.fromRGB(80, 220, 120) or Color3.fromRGB(50, 50, 55)
-            local targetPos = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
-            TweenService:Create(ToggleBG, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = targetColor}):Play()
-            TweenService:Create(Circle, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = targetPos}):Play()
+            local targetColor = state and Color3.fromRGB(90, 100, 220) or Color3.fromRGB(50, 50, 55)
+            local targetPos = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+            TweenService:Create(ToggleBG, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = targetColor}):Play()
+            TweenService:Create(Circle, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = targetPos}):Play()
             callback(state)
         end
         ToggleBG.MouseButton1Click:Connect(Fire)
@@ -147,27 +175,34 @@ function Library:CreateWindow(titleText)
         local callback = data.callback or function() end
 
         local ButtonBG = Instance.new("TextButton")
-        ButtonBG.Size = UDim2.new(1, -10, 0, 36)
-        ButtonBG.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+        ButtonBG.Size = UDim2.new(1, 0, 0, 42)
+        ButtonBG.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
         ButtonBG.Text = text
-        ButtonBG.TextColor3 = Color3.fromRGB(255, 255, 255)
-        ButtonBG.TextSize = 14
+        ButtonBG.TextColor3 = Color3.fromRGB(240, 240, 245)
+        ButtonBG.TextSize = 13
         ButtonBG.Font = Enum.Font.GothamMedium
         ButtonBG.AutoButtonColor = false
         ButtonBG.Parent = ScrollFrame
         Instance.new("UICorner", ButtonBG).CornerRadius = UDim.new(0, 6)
 
+        local UIStrokeBtn = Instance.new("UIStroke")
+        UIStrokeBtn.Parent = ButtonBG
+        UIStrokeBtn.Color = Color3.fromRGB(50, 50, 60)
+        UIStrokeBtn.Thickness = 1
+
         ButtonBG.MouseEnter:Connect(function()
-            TweenService:Create(ButtonBG, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(55, 55, 65)}):Play()
+            TweenService:Create(ButtonBG, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
         end)
         ButtonBG.MouseLeave:Connect(function()
-            TweenService:Create(ButtonBG, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
+            TweenService:Create(ButtonBG, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35, 35, 42)}):Play()
         end)
         ButtonBG.MouseButton1Down:Connect(function()
-            TweenService:Create(ButtonBG, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(70, 70, 80)}):Play()
+            TweenService:Create(ButtonBG, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(25, 25, 32)}):Play()
+            TweenService:Create(ButtonBG, TweenInfo.new(0.1), {TextSize = 12}):Play()
         end)
         ButtonBG.MouseButton1Up:Connect(function()
-            TweenService:Create(ButtonBG, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(55, 55, 65)}):Play()
+            TweenService:Create(ButtonBG, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
+            TweenService:Create(ButtonBG, TweenInfo.new(0.1), {TextSize = 13}):Play()
         end)
         ButtonBG.MouseButton1Click:Connect(callback)
     end
@@ -176,17 +211,17 @@ function Library:CreateWindow(titleText)
         local text = data.text or "Label"
 
         local Label = Instance.new("TextLabel")
-        Label.Size = UDim2.new(1, -10, 0, 24)
+        Label.Size = UDim2.new(1, 0, 0, 24)
         Label.BackgroundTransparency = 1
         Label.Text = text
-        Label.TextColor3 = Color3.fromRGB(150, 150, 160)
+        Label.TextColor3 = Color3.fromRGB(160, 160, 170)
         Label.TextSize = 12
         Label.Font = Enum.Font.Gotham
         Label.Parent = ScrollFrame
     end
 
     function Window:Init()
-        -- Пустая функция для совместимости с Library:Init()
+        
     end
 
     return Window
