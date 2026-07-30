@@ -10,15 +10,14 @@ function Library:CreateWindow(titleText)
         CoreGui[guiName]:Destroy()
     end
 
-    -- НОВАЯ ПАЛИТРА: Глубокий синий
     local Colors = {
-        Background = Color3.fromRGB(10, 14, 24),     -- Очень темный синий фон
-        ElementBG = Color3.fromRGB(18, 24, 38),      -- Фон элементов
-        ElementHover = Color3.fromRGB(26, 34, 52),   -- При наведении
-        Stroke = Color3.fromRGB(35, 45, 70),         -- Стандартная обводка
-        Accent = Color3.fromRGB(60, 120, 255),       -- Яркий синий акцент
-        Text = Color3.fromRGB(230, 240, 255),        -- Бело-голубой текст
-        TextMuted = Color3.fromRGB(110, 130, 160)    -- Приглушенный текст
+        Background = Color3.fromRGB(10, 14, 24),
+        ElementBG = Color3.fromRGB(18, 24, 38),
+        ElementHover = Color3.fromRGB(26, 34, 52),
+        Stroke = Color3.fromRGB(35, 45, 70),
+        Accent = Color3.fromRGB(60, 120, 255),
+        Text = Color3.fromRGB(230, 240, 255),
+        TextMuted = Color3.fromRGB(110, 130, 160)
     }
 
     local ScreenGui = Instance.new("ScreenGui")
