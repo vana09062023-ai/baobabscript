@@ -1,12 +1,11 @@
-local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players.LocalPlayer
 
 local Library = {}
 
-function Library:CreateWindow(guiName, titleText)
+function Library:CreateWindow(titleText)
+    local guiName = titleText or "CustomHub"
     if CoreGui:FindFirstChild(guiName) then
         CoreGui[guiName]:Destroy()
     end
@@ -42,7 +41,7 @@ function Library:CreateWindow(guiName, titleText)
     Title.Size = UDim2.new(1, -20, 1, 0)
     Title.Position = UDim2.new(0, 20, 0, 0)
     Title.BackgroundTransparency = 1
-    Title.Text = titleText
+    Title.Text = titleText or "Hub"
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextSize = 18
     Title.Font = Enum.Font.GothamBold
@@ -63,10 +62,12 @@ function Library:CreateWindow(guiName, titleText)
     UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     UIListLayout.Parent = ScrollFrame
 
+    -- Автоматическое изменение размера контента для скролла
     UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
     end)
 
+    -- Перетаскивание
     local dragging, dragInput, dragStart, startPos
     TopBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -92,7 +93,11 @@ function Library:CreateWindow(guiName, titleText)
 
     local Window = {}
 
-    function Window:AddToggle(text, defaultState, callback)
+    function Window:AddToggle(data)
+        local text = data.text or "Toggle"
+        local defaultState = data.state or false
+        local callback = data.callback or function() end
+
         local ToggleFrame = Instance.new("Frame")
         ToggleFrame.Size = UDim2.new(1, -10, 0, 36)
         ToggleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
@@ -137,7 +142,10 @@ function Library:CreateWindow(guiName, titleText)
         ToggleBG.MouseButton1Click:Connect(Fire)
     end
 
-    function Window:AddButton(text, callback)
+    function Window:AddButton(data)
+        local text = data.text or "Button"
+        local callback = data.callback or function() end
+
         local ButtonBG = Instance.new("TextButton")
         ButtonBG.Size = UDim2.new(1, -10, 0, 36)
         ButtonBG.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
@@ -164,7 +172,9 @@ function Library:CreateWindow(guiName, titleText)
         ButtonBG.MouseButton1Click:Connect(callback)
     end
 
-    function Window:AddLabel(text)
+    function Window:AddLabel(data)
+        local text = data.text or "Label"
+
         local Label = Instance.new("TextLabel")
         Label.Size = UDim2.new(1, -10, 0, 24)
         Label.BackgroundTransparency = 1
@@ -175,137 +185,11 @@ function Library:CreateWindow(guiName, titleText)
         Label.Parent = ScrollFrame
     end
 
+    function Window:Init()
+        -- Пустая функция для совместимости с Library:Init()
+    end
+
     return Window
 end
 
-local App = Library:CreateWindow("SmoothCustomHub", "Chameleon Hub")
-
-_G.ESP = false
-local espConnections = {}
-
-local function applyESP(player)
-    if not _G.ESP or player == LocalPlayer then return end
-    local char = player.Character
-    if not char then return end
-
-    local highlight = char:FindFirstChild("PlayerESP")
-    if not highlight then
-        highlight = Instance.new("Highlight")
-        highlight.Name = "PlayerESP"
-        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        highlight.FillTransparency = 0
-        highlight.OutlineTransparency = 0
-        highlight.Parent = char
-    end
-
-    local role = player:GetAttribute("Role")
-    if role == "Hider" then
-        highlight.FillColor = Color3.fromRGB(0, 255, 0)
-        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-    elseif role == "Seeker" then
-        highlight.FillColor = Color3.fromRGB(255, 0, 0)
-        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-    else
-        highlight.FillColor = Color3.fromRGB(255, 255, 255)
-        highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
-    end
-end
-
-local function removeESP(player)
-    if player.Character and player.Character:FindFirstChild("PlayerESP") then
-        player.Character.PlayerESP:Destroy()
-    end
-    if espConnections[player] then
-        for _, conn in ipairs(espConnections[player]) do conn:Disconnect() end
-        espConnections[player] = nil
-    end
-end
-
-local function setupPlayer(player)
-    if player == LocalPlayer then return end
-    espConnections[player] = {}
-    table.insert(espConnections[player], player.CharacterAdded:Connect(function() task.wait(0.2) applyESP(player) end))
-    table.insert(espConnections[player], player:GetAttributeChangedSignal("Role"):Connect(function() applyESP(player) end))
-    if player.Character then applyESP(player) end
-end
-
-App:AddToggle("Player ESP", false, function(state)
-    _G.ESP = state
-    if state then
-        for _, player in ipairs(Players:GetPlayers()) do setupPlayer(player) end
-        espConnections.PlayerAdded = Players.PlayerAdded:Connect(setupPlayer)
-        espConnections.PlayerRemoving = Players.PlayerRemoving:Connect(removeESP)
-    else
-        if espConnections.PlayerAdded then espConnections.PlayerAdded:Disconnect() end
-        if espConnections.PlayerRemoving then espConnections.PlayerRemoving:Disconnect() end
-        for _, player in ipairs(Players:GetPlayers()) do removeESP(player) end
-    end
-end)
-
-local freezeBG, freezeBV
-App:AddToggle("Hide Below", false, function(state)
-    _G.Toggle = state
-    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local hrp = char:WaitForChild("HumanoidRootPart")
-    local hum = char:WaitForChild("Humanoid")
-
-    if state then
-        hum.PlatformStand = true
-        local targetCFrame = hrp.CFrame * CFrame.new(0, -2, 0) * CFrame.Angles(math.rad(90), 0, 0)
-        hrp.CFrame = targetCFrame
-
-        freezeBG = Instance.new("BodyGyro")
-        freezeBG.Name = "FreezeBG"
-        freezeBG.P = 90000
-        freezeBG.MaxTorque = Vector3.new(9000000000, 9000000000, 9000000000)
-        freezeBG.CFrame = targetCFrame
-        freezeBG.Parent = hrp
-
-        freezeBV = Instance.new("BodyVelocity")
-        freezeBV.Name = "FreezeBV"
-        freezeBV.MaxForce = Vector3.new(9000000000, 9000000000, 9000000000)
-        freezeBV.Velocity = Vector3.zero
-        freezeBV.Parent = hrp
-
-        task.spawn(function()
-            while _G.Toggle and char and hrp.Parent do
-                if freezeBG then freezeBG.CFrame = targetCFrame end
-                if freezeBV then freezeBV.Velocity = Vector3.zero end
-                hrp.CFrame = targetCFrame
-                task.wait()
-            end
-        end)
-    else
-        if freezeBG then freezeBG:Destroy() end
-        if freezeBV then freezeBV:Destroy() end
-        hrp.CFrame = hrp.CFrame * CFrame.new(0, 5, 0)
-        hum.PlatformStand = false
-    end
-end)
-
-LocalPlayer.CameraMode = Enum.CameraMode.Classic
-LocalPlayer.CameraMinZoomDistance = 5
-LocalPlayer.CameraMaxZoomDistance = 150
-if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-    workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
-end
-UserInputService.JumpRequest:Connect(function()
-    local char = LocalPlayer.Character
-    if char then
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
-    end
-end)
-
-App:AddButton("Reset Character", function()
-    local char = LocalPlayer.Character
-    if char and char:FindFirstChild("Humanoid") then
-        char.Humanoid.Health = 0
-    end
-end)
-
-App:AddButton("Print Info To Console", function()
-    print("Chameleon Hub Loaded Successfully!")
-end)
-
-App:AddLabel("discord.gg/zWpEHRkHW")
+return Library
