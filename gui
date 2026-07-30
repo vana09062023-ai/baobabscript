@@ -415,9 +415,7 @@ function Library:CreateWindow(titleText)
         Label.Parent = ScrollFrame
     end
 
-    -- ВОТ ЭТА ФУНКЦИЯ БЫЛА ПРОПУЩЕНА! Без нее старые скрипты выдавали ошибку.
     function Window:Init()
-        -- Пустая функция для обратной совместимости с твоими скриптами
     end
 
     return Window
