@@ -10,15 +10,18 @@ function Library:CreateWindow(titleText)
         CoreGui[guiName]:Destroy()
     end
 
+    -- НОВАЯ ПАЛИТРА: Premium Dark & Amethyst
     local Colors = {
-        Background = Color3.fromRGB(10, 14, 24),
-        ElementBG = Color3.fromRGB(18, 24, 38),
-        ElementHover = Color3.fromRGB(26, 34, 52),
-        Stroke = Color3.fromRGB(35, 45, 70),
-        Accent = Color3.fromRGB(60, 120, 255),
-        Text = Color3.fromRGB(230, 240, 255),
-        TextMuted = Color3.fromRGB(110, 130, 160)
+        Background = Color3.fromRGB(16, 16, 18),     -- Почти черный, матовый
+        ElementBG = Color3.fromRGB(24, 24, 28),      -- Чуть светлее для кнопок
+        ElementHover = Color3.fromRGB(32, 32, 38),   -- Приятное высветление при наведении
+        Stroke = Color3.fromRGB(42, 42, 48),         -- Тонкая, ненавязчивая обводка
+        Accent = Color3.fromRGB(157, 78, 221),       -- Яркий аметистовый (фиолетовый) акцент
+        Text = Color3.fromRGB(245, 245, 245),        -- Чистый белый текст
+        TextMuted = Color3.fromRGB(120, 120, 130)    -- Серый для неактивного текста
     }
+
+    print("Hello! Script by: discord.gg/CVxS3dH5fz")
 
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = guiName
@@ -35,13 +38,13 @@ function Library:CreateWindow(titleText)
     MainFrame.Parent = ScreenGui
 
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 10)
+    UICorner.CornerRadius = UDim.new(0, 8) -- Сделал углы чуть более строгими (8 вместо 10)
     UICorner.Parent = MainFrame
 
     local UIStroke = Instance.new("UIStroke")
     UIStroke.Parent = MainFrame
     UIStroke.Color = Colors.Stroke
-    UIStroke.Thickness = 1.5
+    UIStroke.Thickness = 1.2 -- Более тонкая и элегантная обводка
 
     local TopBar = Instance.new("Frame")
     TopBar.Size = UDim2.new(1, 0, 0, 45)
@@ -53,28 +56,11 @@ function Library:CreateWindow(titleText)
     Title.Position = UDim2.new(0, 20, 0, 0)
     Title.BackgroundTransparency = 1
     Title.Text = titleText or "Hub"
-    Title.TextColor3 = Colors.Accent
-    Title.TextSize = 16
+    Title.TextColor3 = Colors.Text
+    Title.TextSize = 15
     Title.Font = Enum.Font.GothamBold
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = TopBar
-
-    -- ЭФФЕКТ ПЕРЕЛИВАНИЯ (Shimmer Effect)
-    task.spawn(function()
-        local shimmerColors = {
-            Color3.fromRGB(40, 80, 220),   -- Глубокий синий
-            Color3.fromRGB(0, 170, 255),   -- Неоновый голубой
-            Color3.fromRGB(70, 120, 255)   -- Мягкий синий
-        }
-        local i = 1
-        while true do
-            TweenService:Create(UIStroke, TweenInfo.new(2.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Color = shimmerColors[i]}):Play()
-            TweenService:Create(Title, TweenInfo.new(2.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {TextColor3 = shimmerColors[i]}):Play()
-            task.wait(2.5)
-            i = i + 1
-            if i > #shimmerColors then i = 1 end
-        end
-    end)
 
     local MinimizeBtn = Instance.new("TextButton")
     MinimizeBtn.Size = UDim2.new(0, 45, 0, 45)
@@ -87,7 +73,7 @@ function Library:CreateWindow(titleText)
     MinimizeBtn.Parent = TopBar
 
     MinimizeBtn.MouseEnter:Connect(function()
-        TweenService:Create(MinimizeBtn, TweenInfo.new(0.2), {TextColor3 = Colors.Text}):Play()
+        TweenService:Create(MinimizeBtn, TweenInfo.new(0.2), {TextColor3 = Colors.Accent}):Play()
     end)
     MinimizeBtn.MouseLeave:Connect(function()
         TweenService:Create(MinimizeBtn, TweenInfo.new(0.2), {TextColor3 = Colors.TextMuted}):Play()
@@ -106,7 +92,7 @@ function Library:CreateWindow(titleText)
     BottomLabel.BackgroundTransparency = 1
     BottomLabel.Text = "discord.gg/CVxS3dH5fz"
     BottomLabel.TextColor3 = Colors.TextMuted
-    BottomLabel.TextSize = 12
+    BottomLabel.TextSize = 11
     BottomLabel.Font = Enum.Font.GothamMedium
     BottomLabel.Parent = MainFrame
 
@@ -114,7 +100,7 @@ function Library:CreateWindow(titleText)
     ScrollFrame.Size = UDim2.new(1, 0, 0, 343)
     ScrollFrame.Position = UDim2.new(0, 0, 0, 46)
     ScrollFrame.BackgroundTransparency = 1
-    ScrollFrame.ScrollBarThickness = 4
+    ScrollFrame.ScrollBarThickness = 3 -- Тоньше скроллбар
     ScrollFrame.ScrollBarImageColor3 = Colors.Stroke
     ScrollFrame.BorderSizePixel = 0
     ScrollFrame.Parent = MainFrame
@@ -127,7 +113,7 @@ function Library:CreateWindow(titleText)
     UIPadding.Parent = ScrollFrame
 
     local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Padding = UDim.new(0, 10)
+    UIListLayout.Padding = UDim.new(0, 8) -- Чуть меньше расстояние между элементами
     UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     UIListLayout.Parent = ScrollFrame
 
@@ -202,17 +188,13 @@ function Library:CreateWindow(titleText)
         local callback = data.callback or function() end
 
         local ToggleFrame = Instance.new("TextButton")
-        ToggleFrame.Size = UDim2.new(1, 0, 0, 42)
+        ToggleFrame.Size = UDim2.new(1, 0, 0, 40)
         ToggleFrame.BackgroundColor3 = Colors.ElementBG
         ToggleFrame.AutoButtonColor = false
         ToggleFrame.Text = ""
         ToggleFrame.Parent = ScrollFrame
-        Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 8)
-
-        local UIStrokeToggle = Instance.new("UIStroke")
-        UIStrokeToggle.Parent = ToggleFrame
-        UIStrokeToggle.Color = Colors.Stroke
-        UIStrokeToggle.Thickness = 1
+        Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 6)
+        Instance.new("UIStroke", ToggleFrame).Color = Colors.Stroke
 
         local Label = Instance.new("TextLabel")
         Label.Size = UDim2.new(1, -70, 1, 0)
@@ -226,16 +208,17 @@ function Library:CreateWindow(titleText)
         Label.Parent = ToggleFrame
 
         local ToggleBG = Instance.new("Frame")
-        ToggleBG.Size = UDim2.new(0, 44, 0, 22)
-        ToggleBG.Position = UDim2.new(1, -56, 0.5, -11)
-        ToggleBG.BackgroundColor3 = defaultState and Colors.Accent or Colors.ElementHover
+        ToggleBG.Size = UDim2.new(0, 40, 0, 20)
+        ToggleBG.Position = UDim2.new(1, -52, 0.5, -10)
+        ToggleBG.BackgroundColor3 = defaultState and Colors.Accent or Colors.Background
         ToggleBG.Parent = ToggleFrame
         Instance.new("UICorner", ToggleBG).CornerRadius = UDim.new(1, 0)
+        Instance.new("UIStroke", ToggleBG).Color = Colors.Stroke
 
         local Circle = Instance.new("Frame")
-        Circle.Size = UDim2.new(0, 16, 0, 16)
-        Circle.Position = UDim2.new(defaultState and 1 or 0, defaultState and -19 or 3, 0.5, -8)
-        Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Circle.Size = UDim2.new(0, 14, 0, 14)
+        Circle.Position = UDim2.new(defaultState and 1 or 0, defaultState and -17 or 3, 0.5, -7)
+        Circle.BackgroundColor3 = defaultState and Colors.Text or Colors.TextMuted
         Circle.Parent = ToggleBG
         Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
 
@@ -249,11 +232,12 @@ function Library:CreateWindow(titleText)
         local state = defaultState
         local function Fire()
             state = not state
-            local targetColor = state and Colors.Accent or Colors.ElementHover
-            local targetPos = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+            local targetColor = state and Colors.Accent or Colors.Background
+            local targetCircleColor = state and Colors.Text or Colors.TextMuted
+            local targetPos = state and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)
             
             TweenService:Create(ToggleBG, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = targetColor}):Play()
-            TweenService:Create(Circle, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = targetPos}):Play()
+            TweenService:Create(Circle, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = targetPos, BackgroundColor3 = targetCircleColor}):Play()
             callback(state)
         end
         ToggleFrame.MouseButton1Click:Connect(Fire)
@@ -264,7 +248,7 @@ function Library:CreateWindow(titleText)
         local callback = data.callback or function() end
 
         local ButtonBG = Instance.new("TextButton")
-        ButtonBG.Size = UDim2.new(1, 0, 0, 42)
+        ButtonBG.Size = UDim2.new(1, 0, 0, 40)
         ButtonBG.BackgroundColor3 = Colors.ElementBG
         ButtonBG.Text = text
         ButtonBG.TextColor3 = Colors.Text
@@ -272,12 +256,8 @@ function Library:CreateWindow(titleText)
         ButtonBG.Font = Enum.Font.GothamMedium
         ButtonBG.AutoButtonColor = false
         ButtonBG.Parent = ScrollFrame
-        Instance.new("UICorner", ButtonBG).CornerRadius = UDim.new(0, 8)
-
-        local UIStrokeBtn = Instance.new("UIStroke")
-        UIStrokeBtn.Parent = ButtonBG
-        UIStrokeBtn.Color = Colors.Stroke
-        UIStrokeBtn.Thickness = 1
+        Instance.new("UICorner", ButtonBG).CornerRadius = UDim.new(0, 6)
+        Instance.new("UIStroke", ButtonBG).Color = Colors.Stroke
 
         ButtonBG.MouseEnter:Connect(function()
             TweenService:Create(ButtonBG, TweenInfo.new(0.15), {BackgroundColor3 = Colors.ElementHover}):Play()
@@ -286,7 +266,7 @@ function Library:CreateWindow(titleText)
             TweenService:Create(ButtonBG, TweenInfo.new(0.15), {BackgroundColor3 = Colors.ElementBG}):Play()
         end)
         ButtonBG.MouseButton1Down:Connect(function()
-            TweenService:Create(ButtonBG, TweenInfo.new(0.1), {BackgroundColor3 = Colors.Stroke, TextSize = 12}):Play()
+            TweenService:Create(ButtonBG, TweenInfo.new(0.1), {BackgroundColor3 = Colors.Background, TextSize = 12}):Play()
         end)
         ButtonBG.MouseButton1Up:Connect(function()
             TweenService:Create(ButtonBG, TweenInfo.new(0.1), {BackgroundColor3 = Colors.ElementHover, TextSize = 13}):Play()
@@ -300,10 +280,10 @@ function Library:CreateWindow(titleText)
         local callback = data.callback or function() end
 
         local TBFrame = Instance.new("Frame")
-        TBFrame.Size = UDim2.new(1, 0, 0, 42)
+        TBFrame.Size = UDim2.new(1, 0, 0, 40)
         TBFrame.BackgroundColor3 = Colors.ElementBG
         TBFrame.Parent = ScrollFrame
-        Instance.new("UICorner", TBFrame).CornerRadius = UDim.new(0, 8)
+        Instance.new("UICorner", TBFrame).CornerRadius = UDim.new(0, 6)
         Instance.new("UIStroke", TBFrame).Color = Colors.Stroke
 
         local Label = Instance.new("TextLabel")
@@ -327,7 +307,7 @@ function Library:CreateWindow(titleText)
         TextBox.TextSize = 12
         TextBox.Font = Enum.Font.Gotham
         TextBox.Parent = TBFrame
-        Instance.new("UICorner", TextBox).CornerRadius = UDim.new(0, 6)
+        Instance.new("UICorner", TextBox).CornerRadius = UDim.new(0, 4)
         Instance.new("UIStroke", TextBox).Color = Colors.Stroke
 
         TextBox.FocusLost:Connect(function()
@@ -343,14 +323,14 @@ function Library:CreateWindow(titleText)
         local callback = data.callback or function() end
 
         local SliderFrame = Instance.new("Frame")
-        SliderFrame.Size = UDim2.new(1, 0, 0, 50)
+        SliderFrame.Size = UDim2.new(1, 0, 0, 48)
         SliderFrame.BackgroundColor3 = Colors.ElementBG
         SliderFrame.Parent = ScrollFrame
-        Instance.new("UICorner", SliderFrame).CornerRadius = UDim.new(0, 8)
+        Instance.new("UICorner", SliderFrame).CornerRadius = UDim.new(0, 6)
         Instance.new("UIStroke", SliderFrame).Color = Colors.Stroke
 
         local Label = Instance.new("TextLabel")
-        Label.Size = UDim2.new(1, -30, 0, 25)
+        Label.Size = UDim2.new(1, -30, 0, 24)
         Label.Position = UDim2.new(0, 15, 0, 0)
         Label.BackgroundTransparency = 1
         Label.Text = text
@@ -361,7 +341,7 @@ function Library:CreateWindow(titleText)
         Label.Parent = SliderFrame
 
         local ValueLabel = Instance.new("TextLabel")
-        ValueLabel.Size = UDim2.new(0, 50, 0, 25)
+        ValueLabel.Size = UDim2.new(0, 50, 0, 24)
         ValueLabel.Position = UDim2.new(1, -65, 0, 0)
         ValueLabel.BackgroundTransparency = 1
         ValueLabel.Text = tostring(default)
@@ -372,7 +352,7 @@ function Library:CreateWindow(titleText)
         ValueLabel.Parent = SliderFrame
 
         local SliderBG = Instance.new("TextButton")
-        SliderBG.Size = UDim2.new(1, -30, 0, 6)
+        SliderBG.Size = UDim2.new(1, -30, 0, 4)
         SliderBG.Position = UDim2.new(0, 15, 0, 32)
         SliderBG.BackgroundColor3 = Colors.Background
         SliderBG.Text = ""
@@ -419,7 +399,7 @@ function Library:CreateWindow(titleText)
         local text = data.text or "Label"
 
         local Label = Instance.new("TextLabel")
-        Label.Size = UDim2.new(1, 0, 0, 24)
+        Label.Size = UDim2.new(1, 0, 0, 20)
         Label.BackgroundTransparency = 1
         Label.Text = text
         Label.TextColor3 = Colors.TextMuted
@@ -429,7 +409,7 @@ function Library:CreateWindow(titleText)
     end
 
     function Window:Init()
-        -- Сохранено для совместимости
+        -- Пустая функция для обратной совместимости
     end
 
     return Window
