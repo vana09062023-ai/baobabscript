@@ -1,0 +1,436 @@
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local Library = {}
+
+-- Вспомогательная функция для градиентов
+local function CreateGradient(parent)
+    local UIGradient = Instance.new("UIGradient")
+    UIGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(170, 85, 255)),   -- Неоново-фиолетовый
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 220, 255))     -- Голубой/Циановый
+    })
+    UIGradient.Rotation = 45
+    UIGradient.Parent = parent
+    return UIGradient
+end
+
+function Library:CreateWindow(titleText)
+    local guiName = titleText or "Aurora Hub"
+    if CoreGui:FindFirstChild(guiName) then
+        CoreGui[guiName]:Destroy()
+    end
+
+    -- ПАЛИТРА: Глубокий темный фон + Неоновые акценты
+    local Colors = {
+        Base = Color3.fromRGB(12, 12, 16),
+        Surface = Color3.fromRGB(20, 20, 26),
+        Hover = Color3.fromRGB(30, 30, 38),
+        Text = Color3.fromRGB(255, 255, 255),
+        DimText = Color3.fromRGB(130, 130, 145),
+        Stroke = Color3.fromRGB(40, 40, 50)
+    }
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = guiName
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = CoreGui
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Size = UDim2.new(0, 380, 0, 460)
+    MainFrame.Position = UDim2.new(0.5, -190, 0.5, -230)
+    MainFrame.BackgroundColor3 = Colors.Base
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 14)
+    UICorner.Parent = MainFrame
+
+    -- Градиентная обводка для главного окна
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Parent = MainFrame
+    UIStroke.Thickness = 1.5
+    UIStroke.Color = Color3.fromRGB(255, 255, 255)
+    CreateGradient(UIStroke)
+
+    -- TOP BAR
+    local TopBar = Instance.new("Frame")
+    TopBar.Size = UDim2.new(1, 0, 0, 50)
+    TopBar.BackgroundTransparency = 1
+    TopBar.Parent = MainFrame
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, -60, 1, 0)
+    Title.Position = UDim2.new(0, 20, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = titleText or "AURORA HUB"
+    Title.TextColor3 = Colors.Text
+    Title.TextSize = 18
+    Title.Font = Enum.Font.GothamBlack
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = TopBar
+
+    local MinimizeBtn = Instance.new("TextButton")
+    MinimizeBtn.Size = UDim2.new(0, 50, 0, 50)
+    MinimizeBtn.Position = UDim2.new(1, -50, 0, 0)
+    MinimizeBtn.BackgroundTransparency = 1
+    MinimizeBtn.Text = "—"
+    MinimizeBtn.TextColor3 = Colors.Text
+    MinimizeBtn.TextSize = 16
+    MinimizeBtn.Font = Enum.Font.GothamBold
+    MinimizeBtn.Parent = TopBar
+
+    -- FOOTER (С Discord ссылкой)
+    local Footer = Instance.new("Frame")
+    Footer.Size = UDim2.new(1, 0, 0, 35)
+    Footer.Position = UDim2.new(0, 0, 1, -35)
+    Footer.BackgroundColor3 = Colors.Surface
+    Footer.BorderSizePixel = 0
+    Footer.Parent = MainFrame
+    
+    Instance.new("UICorner", Footer).CornerRadius = UDim.new(0, 14) -- Скругляем низ
+
+    -- Скрываем верхние углы футера, чтобы он сливался с основным фоном
+    local FooterCover = Instance.new("Frame")
+    FooterCover.Size = UDim2.new(1, 0, 0, 14)
+    FooterCover.Position = UDim2.new(0, 0, 0, 0)
+    FooterCover.BackgroundColor3 = Colors.Surface
+    FooterCover.BorderSizePixel = 0
+    FooterCover.Parent = Footer
+
+    local DiscordLabel = Instance.new("TextLabel")
+    DiscordLabel.Size = UDim2.new(1, 0, 1, 0)
+    DiscordLabel.BackgroundTransparency = 1
+    DiscordLabel.Text = "Discord: https://discord.gg/CVxS3dH5fz"
+    DiscordLabel.TextColor3 = Colors.DimText
+    DiscordLabel.TextSize = 12
+    DiscordLabel.Font = Enum.Font.GothamMedium
+    DiscordLabel.Parent = Footer
+
+    -- SCROLLING FRAME (Область контента)
+    local ScrollFrame = Instance.new("ScrollingFrame")
+    ScrollFrame.Size = UDim2.new(1, 0, 1, -85) -- Оставляем место для TopBar и Footer
+    ScrollFrame.Position = UDim2.new(0, 0, 0, 50)
+    ScrollFrame.BackgroundTransparency = 1
+    ScrollFrame.ScrollBarThickness = 0 -- Прячем скроллбар для минимализма (можно скроллить колесиком)
+    ScrollFrame.BorderSizePixel = 0
+    ScrollFrame.Parent = MainFrame
+
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.PaddingLeft = UDim.new(0, 20)
+    UIPadding.PaddingRight = UDim.new(0, 20)
+    UIPadding.PaddingTop = UDim.new(0, 5)
+    UIPadding.PaddingBottom = UDim.new(0, 15)
+    UIPadding.Parent = ScrollFrame
+
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Padding = UDim.new(0, 12)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Parent = ScrollFrame
+
+    UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 20)
+    end)
+
+    -- DRAGGING
+    local dragging, dragInput, dragStart, startPos
+    TopBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    TopBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            TweenService:Create(MainFrame, TweenInfo.new(0.08, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            }):Play()
+        end
+    end)
+
+    -- MINIMIZE
+    local minimized = false
+    MinimizeBtn.MouseButton1Click:Connect(function()
+        minimized = not minimized
+        if minimized then
+            ScrollFrame.Visible = false
+            Footer.Visible = false
+            TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, 380, 0, 50)}):Play()
+        else
+            TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, 380, 0, 460)}):Play()
+            task.wait(0.1)
+            ScrollFrame.Visible = true
+            Footer.Visible = true
+        end
+    end)
+
+    local Window = {}
+
+    -- 1. BUTTON (Овальная форма с градиентом при наведении)
+    function Window:AddButton(data)
+        local text = data.text or "Button"
+        local callback = data.callback or function() end
+
+        local Button = Instance.new("TextButton")
+        Button.Size = UDim2.new(1, 0, 0, 44)
+        Button.BackgroundColor3 = Colors.Surface
+        Button.Text = text
+        Button.TextColor3 = Colors.Text
+        Button.TextSize = 14
+        Button.Font = Enum.Font.GothamBold
+        Button.AutoButtonColor = false
+        Button.Parent = ScrollFrame
+        Instance.new("UICorner", Button).CornerRadius = UDim.new(1, 0) -- Pill shape
+
+        local UIStrokeBtn = Instance.new("UIStroke", Button)
+        UIStrokeBtn.Color = Colors.Stroke
+        UIStrokeBtn.Thickness = 1
+
+        Button.MouseEnter:Connect(function()
+            TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = Colors.Hover}):Play()
+        end)
+        Button.MouseLeave:Connect(function()
+            TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = Colors.Surface}):Play()
+        end)
+        Button.MouseButton1Down:Connect(function()
+            TweenService:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.96, 0, 0, 40)}):Play()
+        end)
+        Button.MouseButton1Up:Connect(function()
+            TweenService:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 44)}):Play()
+            callback()
+        end)
+    end
+
+    -- 2. TOGGLE (Анимация градиента)
+    function Window:AddToggle(data)
+        local text = data.text or "Toggle"
+        local defaultState = data.state or false
+        local callback = data.callback or function() end
+
+        local ToggleFrame = Instance.new("TextButton")
+        ToggleFrame.Size = UDim2.new(1, 0, 0, 44)
+        ToggleFrame.BackgroundColor3 = Colors.Surface
+        ToggleFrame.AutoButtonColor = false
+        ToggleFrame.Text = ""
+        ToggleFrame.Parent = ScrollFrame
+        Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(1, 0)
+        
+        local UIStrokeTgl = Instance.new("UIStroke", ToggleFrame)
+        UIStrokeTgl.Color = Colors.Stroke
+
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(1, -80, 1, 0)
+        Label.Position = UDim2.new(0, 20, 0, 0)
+        Label.BackgroundTransparency = 1
+        Label.Text = text
+        Label.TextColor3 = Colors.Text
+        Label.TextSize = 14
+        Label.Font = Enum.Font.GothamMedium
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Parent = ToggleFrame
+
+        local ToggleBG = Instance.new("Frame")
+        ToggleBG.Size = UDim2.new(0, 44, 0, 24)
+        ToggleBG.Position = UDim2.new(1, -60, 0.5, -12)
+        ToggleBG.BackgroundColor3 = defaultState and Color3.fromRGB(255,255,255) or Colors.Base
+        ToggleBG.Parent = ToggleFrame
+        Instance.new("UICorner", ToggleBG).CornerRadius = UDim.new(1, 0)
+        
+        -- Устанавливаем градиент для включенного состояния
+        local Grad = CreateGradient(ToggleBG)
+        Grad.Enabled = defaultState
+
+        local Circle = Instance.new("Frame")
+        Circle.Size = UDim2.new(0, 18, 0, 18)
+        Circle.Position = UDim2.new(defaultState and 1 or 0, defaultState and -21 or 3, 0.5, -9)
+        Circle.BackgroundColor3 = Colors.Text
+        Circle.Parent = ToggleBG
+        Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+
+        local state = defaultState
+        ToggleFrame.MouseButton1Click:Connect(function()
+            state = not state
+            Grad.Enabled = state
+            
+            local targetPos = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
+            local targetColor = state and Color3.fromRGB(255,255,255) or Colors.Base
+            
+            TweenService:Create(ToggleBG, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = targetColor}):Play()
+            TweenService:Create(Circle, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = targetPos}):Play()
+            callback(state)
+        end)
+    end
+
+    -- 3. INPUT (Стиль Underline / Подчеркивание)
+    function Window:AddInput(data)
+        local text = data.text or "Input"
+        local placeholder = data.placeholder or "Enter value..."
+        local callback = data.callback or function() end
+
+        local InputFrame = Instance.new("Frame")
+        InputFrame.Size = UDim2.new(1, 0, 0, 50)
+        InputFrame.BackgroundColor3 = Colors.Surface
+        InputFrame.Parent = ScrollFrame
+        Instance.new("UICorner", InputFrame).CornerRadius = UDim.new(0, 8)
+
+        local Title = Instance.new("TextLabel")
+        Title.Size = UDim2.new(0, 100, 1, 0)
+        Title.Position = UDim2.new(0, 15, 0, 0)
+        Title.BackgroundTransparency = 1
+        Title.Text = text
+        Title.TextColor3 = Colors.Text
+        Title.TextSize = 14
+        Title.Font = Enum.Font.GothamMedium
+        Title.TextXAlignment = Enum.TextXAlignment.Left
+        Title.Parent = InputFrame
+
+        local TextBox = Instance.new("TextBox")
+        TextBox.Size = UDim2.new(1, -130, 1, 0)
+        TextBox.Position = UDim2.new(0, 115, 0, 0)
+        TextBox.BackgroundTransparency = 1
+        TextBox.Text = ""
+        TextBox.PlaceholderText = placeholder
+        TextBox.PlaceholderColor3 = Colors.DimText
+        TextBox.TextColor3 = Colors.Text
+        TextBox.TextSize = 13
+        TextBox.Font = Enum.Font.Gotham
+        TextBox.TextXAlignment = Enum.TextXAlignment.Right
+        TextBox.Parent = InputFrame
+
+        -- Анимированная линия подчеркивания
+        local UnderlineBG = Instance.new("Frame")
+        UnderlineBG.Size = UDim2.new(1, -30, 0, 2)
+        UnderlineBG.Position = UDim2.new(0, 15, 1, -2)
+        UnderlineBG.BackgroundColor3 = Colors.Stroke
+        UnderlineBG.BorderSizePixel = 0
+        UnderlineBG.Parent = InputFrame
+
+        local UnderlineActive = Instance.new("Frame")
+        UnderlineActive.Size = UDim2.new(0, 0, 1, 0)
+        UnderlineActive.Position = UDim2.new(0.5, 0, 0, 0)
+        UnderlineActive.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        UnderlineActive.BorderSizePixel = 0
+        UnderlineActive.Parent = UnderlineBG
+        CreateGradient(UnderlineActive)
+
+        TextBox.Focused:Connect(function()
+            TweenService:Create(UnderlineActive, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                Size = UDim2.new(1, 0, 1, 0),
+                Position = UDim2.new(0, 0, 0, 0)
+            }):Play()
+        end)
+
+        TextBox.FocusLost:Connect(function()
+            TweenService:Create(UnderlineActive, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                Size = UDim2.new(0, 0, 1, 0),
+                Position = UDim2.new(0.5, 0, 0, 0)
+            }):Play()
+            callback(TextBox.Text)
+        end)
+    end
+
+    -- 4. SLIDER (Тонкий, с градиентным заполнением)
+    function Window:AddSlider(data)
+        local text = data.text or "Slider"
+        local min = data.min or 0
+        local max = data.max or 100
+        local default = data.default or min
+        local callback = data.callback or function() end
+
+        local SliderFrame = Instance.new("Frame")
+        SliderFrame.Size = UDim2.new(1, 0, 0, 60)
+        SliderFrame.BackgroundColor3 = Colors.Surface
+        SliderFrame.Parent = ScrollFrame
+        Instance.new("UICorner", SliderFrame).CornerRadius = UDim.new(0, 8)
+
+        local Label = Instance.new("TextLabel")
+        Label.Size = UDim2.new(1, -30, 0, 30)
+        Label.Position = UDim2.new(0, 15, 0, 5)
+        Label.BackgroundTransparency = 1
+        Label.Text = text
+        Label.TextColor3 = Colors.Text
+        Label.TextSize = 14
+        Label.Font = Enum.Font.GothamMedium
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Parent = SliderFrame
+
+        local ValueLabel = Instance.new("TextLabel")
+        ValueLabel.Size = UDim2.new(0, 50, 0, 30)
+        ValueLabel.Position = UDim2.new(1, -65, 0, 5)
+        ValueLabel.BackgroundTransparency = 1
+        ValueLabel.Text = tostring(default)
+        ValueLabel.TextColor3 = Color3.fromRGB(0, 220, 255) -- Голубой акцент
+        ValueLabel.TextSize = 14
+        ValueLabel.Font = Enum.Font.GothamBold
+        ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+        ValueLabel.Parent = SliderFrame
+
+        local SliderBG = Instance.new("TextButton")
+        SliderBG.Size = UDim2.new(1, -30, 0, 6)
+        SliderBG.Position = UDim2.new(0, 15, 0, 42)
+        SliderBG.BackgroundColor3 = Colors.Base
+        SliderBG.Text = ""
+        SliderBG.AutoButtonColor = false
+        SliderBG.Parent = SliderFrame
+        Instance.new("UICorner", SliderBG).CornerRadius = UDim.new(1, 0)
+
+        local Fill = Instance.new("Frame")
+        Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+        Fill.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        Fill.Parent = SliderBG
+        Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
+        CreateGradient(Fill)
+
+        local Knob = Instance.new("Frame")
+        Knob.Size = UDim2.new(0, 14, 0, 14)
+        Knob.Position = UDim2.new(1, -7, 0.5, -7)
+        Knob.BackgroundColor3 = Colors.Text
+        Knob.Parent = Fill
+        Instance.new("UICorner", Knob).CornerRadius = UDim.new(1, 0)
+
+        local dragging = false
+        local function UpdateSlider(input)
+            local pos = math.clamp((input.Position.X - SliderBG.AbsolutePosition.X) / SliderBG.AbsoluteSize.X, 0, 1)
+            local value = math.floor(min + ((max - min) * pos))
+            TweenService:Create(Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(pos, 0, 1, 0)}):Play()
+            ValueLabel.Text = tostring(value)
+            callback(value)
+        end
+
+        SliderBG.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                UpdateSlider(input)
+            end
+        end)
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = false
+            end
+        end)
+        UserInputService.InputChanged:Connect(function(input)
+            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                UpdateSlider(input)
+            end
+        end)
+    end
+
+    function Window:Init()
+        -- Init
+    end
+
+    return Window
+end
+
+return Library
