@@ -20,7 +20,7 @@ function Library:CreateWindow(titleText)
         ElementBG = Color3.fromRGB(22, 22, 28),
         ElementHover = Color3.fromRGB(30, 30, 38),
         Stroke = Color3.fromRGB(45, 45, 55),
-        Accent = Color3.fromRGB(99, 102, 241), -- Приятный Индиго
+        Accent = Color3.fromRGB(99, 102, 241),
         Text = Color3.fromRGB(250, 250, 250),
         TextMuted = Color3.fromRGB(140, 140, 150)
     }
@@ -74,15 +74,6 @@ function Library:CreateWindow(titleText)
     Title.Font = Enum.Font.GothamBold
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = TopBar
-
-    -- Акцентная линия под названием (Градиент)
-    local TitleAccent = Instance.new("Frame")
-    TitleAccent.Size = UDim2.new(0, 30, 0, 3)
-    TitleAccent.Position = UDim2.new(0, 20, 0, 32)
-    TitleAccent.BackgroundColor3 = Colors.Accent
-    TitleAccent.BorderSizePixel = 0
-    TitleAccent.Parent = TopBar
-    Instance.new("UICorner", TitleAccent).CornerRadius = UDim.new(1, 0)
 
     local MinimizeBtn = Instance.new("TextButton")
     MinimizeBtn.Size = UDim2.new(0, 45, 0, 45)
@@ -153,38 +144,38 @@ function Library:CreateWindow(titleText)
         end
     end)
 
-    -- Новая система минимизации (сворачивается в стильную пилюлю)
+    -- Классическая система сворачивания
     local minimized = false
     MinimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
-            TweenService:Create(MinimizeBtn, TweenInfo.new(0.3), {Rotation = 180, TextTransparency = 1}):Play()
-            TweenService:Create(ScrollFrame, TweenInfo.new(0.2), {CanvasPosition = Vector2.new(0,0), ScrollBarImageTransparency = 1}):Play()
+            MinimizeBtn.Text = "+"
+            TweenService:Create(MinimizeBtn, TweenInfo.new(0.3), {Rotation = 90}):Play()
             
-            for _, child in pairs(MainFrame:GetChildren()) do
-                if child ~= TopBar and child ~= UICorner and child ~= UIStroke then
-                    child.Visible = false
-                end
-            end
+            TweenService:Create(BottomLabel, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
+            TweenService:Create(ScrollFrame, TweenInfo.new(0.15), {ScrollBarImageTransparency = 1}):Play()
             
-            TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 160, 0, 45), -- Сворачиваемся в маленькую пилюлю
+            task.wait(0.15)
+            ScrollFrame.Visible = false
+            BottomLabel.Visible = false
+            
+            TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 350, 0, 45)
             }):Play()
-            TweenService:Create(Title, TweenInfo.new(0.5), {TextXAlignment = Enum.TextXAlignment.Center, Position = UDim2.new(0,0,0,0)}):Play()
-            TitleAccent.Visible = false
         else
-            TweenService:Create(MinimizeBtn, TweenInfo.new(0.3), {Rotation = 0, TextTransparency = 0}):Play()
-            TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {
+            MinimizeBtn.Text = "—"
+            TweenService:Create(MinimizeBtn, TweenInfo.new(0.3), {Rotation = 0}):Play()
+            
+            TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
                 Size = UDim2.new(0, 350, 0, 430)
             }):Play()
-            TweenService:Create(Title, TweenInfo.new(0.5), {TextXAlignment = Enum.TextXAlignment.Left, Position = UDim2.new(0, 20, 0, 0)}):Play()
             
-            task.wait(0.3)
-            TitleAccent.Visible = true
-            for _, child in pairs(MainFrame:GetChildren()) do
-                child.Visible = true
-            end
-            TweenService:Create(ScrollFrame, TweenInfo.new(0.2), {ScrollBarImageTransparency = 0}):Play()
+            task.wait(0.2)
+            ScrollFrame.Visible = true
+            BottomLabel.Visible = true
+            
+            TweenService:Create(BottomLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+            TweenService:Create(ScrollFrame, TweenInfo.new(0.3), {ScrollBarImageTransparency = 0}):Play()
         end
     end)
 
@@ -270,7 +261,6 @@ function Library:CreateWindow(titleText)
             CreateRipple(ToggleFrame, mouseLoc.X, mouseLoc.Y - 36)
 
             state = not state
-            -- Пружинная анимация тоггла (Elastic)
             TweenService:Create(ToggleBG, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {BackgroundColor3 = state and Colors.Accent or Colors.Background}):Play()
             TweenService:Create(Circle, TweenInfo.new(0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), {Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)}):Play()
             TweenService:Create(BgStroke, TweenInfo.new(0.2), {Transparency = state and 1 or 0}):Play()
@@ -419,7 +409,6 @@ function Library:CreateWindow(titleText)
         Fill.Parent = SliderBG
         Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
         
-        -- Улучшенный ползунок
         local Knob = Instance.new("Frame")
         Knob.Size = UDim2.new(0, 14, 0, 14)
         Knob.Position = UDim2.new(1, -7, 0.5, -7)
